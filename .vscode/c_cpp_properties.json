@@ -4,10 +4,11 @@
             "name": "Linux",
             "includePath": [
                 "${workspaceFolder}/**",
-                "${workspaceFolder}/euler-trees/src/**"
+                "${workspaceFolder}/euler-trees/src/**",
+                "/home/sualehasif/.local/OpenCilk-10.0.1-Linux/**"
             ],
             "defines": [],
-            "compilerPath": "/usr/bin/clang",
+            "compilerPath": "/home/sualehasif/.local/OpenCilk-10.0.1-Linux/bin/clang++",
             "cStandard": "c11",
             "cppStandard": "c++14",
             "intelliSenseMode": "linux-clang-x64"
