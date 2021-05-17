@@ -9,6 +9,16 @@
 #include <euler-trees/src/dynamic_trees/parallel_euler_tour_tree/include/euler_tour_tree.hpp>
 #include <utilities/hash.hpp>
 
+// TODO: I need to get cilk+ with gcc.
+// TODO: Write the make file for this to compiler.
+// TODO: A runner main file to do some benchmark things
+// TODO: fix the include structure such that eulertree is in include path.
+// TODO: Move utilities into a proper include path
+// TODO: Update the documentation on all the of functions in headers
+// TODO: Add the pbbs sequence library and related things here./
+// TODO: Get the above to compiler properly. 
+
+
 namespace detail {
 
 typedef int8_t Level;
@@ -60,7 +70,8 @@ class BatchDynamicConnectivity {
   BatchDynamicConnectivity(BatchDynamicConnectivity&& other) noexcept;
   /** Move assignment not implemented. */
   BatchDynamicConnectivity& operator=(BatchDynamicConnectivity&& other) noexcept;
-
+  
+  // TODO:make the API use sequences for everything.
   /** Returns true if vertices \p u and \p v are connected in the graph.
    *
    *  Efficiency: logarithmic in the size of the graph.
@@ -69,7 +80,7 @@ class BatchDynamicConnectivity {
    *  @param[in] v Vertex.
    *  @returns True if \p u and \p v are connected, false if they are not.
    */
-  bool BatchConnected(Vertex u, Vertex v) const;
+  sequence<char> BatchConnected(sequence<std::pair<Vertex, Vertex>> suv) const;
 
   /** Returns true if edge \p edge is in the graph.
    *
@@ -98,7 +109,7 @@ class BatchDynamicConnectivity {
    *
    *  @param[in] edge Edge to be added.
    */
-  void BatchAddEdges(const UndirectedEdge& edge);
+  void BatchAddEdges(const sequence<UndirectedEdge>& se);
 
   /** Deletes an edge from the graph.
    *
@@ -109,7 +120,10 @@ class BatchDynamicConnectivity {
    *
    *  @param[in] edge Edge to be deleted.
    */
-  void BatchDeleteEdges(const UndirectedEdge& edge);
+  void BatchDeleteEdges(const sequence<UndirectedEdge>& se);
+
+
+  sequence<Vertex> BatchFindRepr(const sequence<Vertex>& sv);
 
  private:
   void AddNonTreeEdge(const UndirectedEdge& edge);
