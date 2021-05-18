@@ -10,7 +10,7 @@
 #include "utilities/include/hash.hpp"
 #include "utilities/include/utils.h"
 
-// #include <parlay/sequence.h>
+#include <parlay/sequence.h>
 
 // RESOLVED: I need to get cilk+ with gcc.
 // RESOLVED: Move utilities into a proper include path
