@@ -49,7 +49,8 @@ namespace detail {
 // TODO: this hackily allows me to use the sequence. Fix the namespacing later.
 
     
-#define sequence parlay::sequence
+template<typename T>
+using sequence = parlay::sequence<T>;
 
 namespace batchDynamicConnectivity {
     using UndirectedEdge = dynamicGraph::UndirectedEdge;
