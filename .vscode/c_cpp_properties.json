@@ -5,6 +5,7 @@
             "includePath": [
                 "${workspaceFolder}/**",
                 "${workspaceFolder}/include/**",
+                "${workspaceFolder}/include/parlaylib/include/**",
                 "/home/sualehasif/.local/OpenCilk-10.0.1-Linux/**"
             ],
             "defines": [],

@@ -8,8 +8,9 @@
 #include "graph.h"
 #include "parallel_euler_tour_tree/include/euler_tour_tree.hpp"
 #include "utilities/include/hash.hpp"
-#include "utilities/include/seq.h"
 #include "utilities/include/utils.h"
+
+// #include <parlay/sequence.h>
 
 // RESOLVED: I need to get cilk+ with gcc.
 // RESOLVED: Move utilities into a proper include path
@@ -46,7 +47,9 @@ namespace detail {
  */
 
 // TODO: this hackily allows me to use the sequence. Fix the namespacing later.
-#define sequence seq::sequence
+
+    
+#define sequence parlay::sequence
 
 namespace batchDynamicConnectivity {
     using UndirectedEdge = dynamicGraph::UndirectedEdge;
@@ -64,7 +67,7 @@ namespace batchDynamicConnectivity {
          */
         explicit BatchDynamicConnectivity(int64_t num_vertices);
 
-        explicit BatchDynamicConnectivity(int64_t num_vertices, const sequence <UndirectedEdge> &se);
+        explicit BatchDynamicConnectivity(int64_t num_vertices, const sequence<UndirectedEdge> &se);
 
         /** Deallocates the data structure. */
         ~BatchDynamicConnectivity();
@@ -154,14 +157,14 @@ namespace batchDynamicConnectivity {
 
         // TODO: Turn this into a sequence
         // TODO: Turn dynamic forest to use parallel Euler tour trees. Convert to ParallelDynamicForest
-        sequence <BatchDynamicET> parallel_spanning_forests_;
+        sequence <BatchDynamicET*> parallel_spanning_forests_;
 
         // TODO: fix this so that the non_tree_adjacency_lists_ is now proper.
 
         // `adjacency_lists_by_level_[i][v]` contains the vertices connected to vertex
         // v by level-i non-tree edges.
         // TODO: make this concurrent map
-        sequence <sequence <std::unordered_set < Vertex>>>
+        sequence <sequence <std::unordered_set < Vertex>*>>
         non_tree_adjacency_lists_;
 
         // TODO: use a concurrent map here.

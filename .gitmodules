@@ -1,3 +1,6 @@
 [submodule "benchmarks/benchmark"]
 	path = benchmarks/benchmark
 	url = https://github.com/google/benchmark.git
+[submodule "include/parlaylib"]
+	path = include/parlaylib
+	url = git@github.com:cmuparlay/parlaylib.git

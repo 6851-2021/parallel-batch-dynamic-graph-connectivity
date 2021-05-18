@@ -12,14 +12,14 @@ namespace batchDynamicConnectivity {
             : num_vertices_(numVertices), max_level_(log2(numVertices)) {
         
         // parallel initialization for the spanning forests using parallel euler tour trees.
-        parallel_spanning_forests_ = sequence<BatchDynamicET*>(max_level_, 
+        parallel_spanning_forests_ = parlay::sequence<BatchDynamicET*>::from_function(max_level_, 
             [&numVertices](){
                 auto ET = new BatchDynamicET{numVertices};
                 return &ET;
             }
         );
 
-        non_tree_adjacency_lists_ = sequence<sequence<std::unordered_set < Vertex>>> (max_level_, 
+        non_tree_adjacency_lists_ = psequence<sequence<std::unordered_set < Vertex>>>::from_function(max_level_, 
             [&numVertices](){ 
                 auto vertex_sequence = new sequence<std::unordered_set < Vertex>> (numVertices, 
                     [](){
