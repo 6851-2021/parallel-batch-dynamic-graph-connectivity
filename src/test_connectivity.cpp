@@ -3,12 +3,12 @@
 //
 
 #include "batch_dynamic_connectivity/connectivity.h"
-#include "batch_dynamic_connectivity/graph.h"
 
 #include <cassert>
 #include <random>
 #include <utility>
 #include <iostream>
+#include <gtest/gtest.h>
 
 using BatchDynamicConnectivity = batchDynamicConnectivity::BatchDynamicConnectivity;
 

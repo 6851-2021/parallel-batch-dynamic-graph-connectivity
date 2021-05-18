@@ -8,6 +8,8 @@
 #include "graph.h"
 #include "parallel_euler_tour_tree/include/euler_tour_tree.hpp"
 #include "utilities/include/hash.hpp"
+#include "utilities/include/seq.h"
+#include "utilities/include/utils.h"
 
 // RESOLVED: I need to get cilk+ with gcc.
 // RESOLVED: Move utilities into a proper include path
@@ -21,31 +23,36 @@
 
 namespace detail {
 
-typedef int8_t Level;
+    typedef int8_t Level;
 
-enum class EdgeType {
-  // Edge is in the spanning forest of the graph.
-  kNonTree,
-  // Edge is not in the spanning forest of the graph.
-  kTree,
-};
+    enum class EdgeType {
+        // Edge is in the spanning forest of the graph.
+        kNonTree,
+        // Edge is not in the spanning forest of the graph.
+        kTree,
+    };
 
-struct EdgeInfo {
-  Level level;
-  EdgeType type;
-};
+    // A struct that contains information about a particular edge.
+    struct EdgeInfo {
+        Level level;
+        EdgeType type;
+    };
 
 }  // namespace detail
 
-using UndirectedEdge = dynamicGraph::UndirectedEdge;
-using UndirectedEdgeHash = dynamicGraph::UndirectedEdgeHash;
-using BatchDynamicET = parallel_euler_tour_tree::EulerTourTree;
 /** This class represents an undirected graph that can undergo efficient edge
  *  insertions, edge deletions, and connectivity queries. Multiple edges between
  *  a pair of vertices are supported.
  */
 
+// TODO: this hackily allows me to use the sequence. Fix the namespacing later.
+#define sequence seq::sequence
+
 namespace batchDynamicConnectivity {
+    using UndirectedEdge = dynamicGraph::UndirectedEdge;
+    using UndirectedEdgeHash = dynamicGraph::UndirectedEdgeHash;
+    using BatchDynamicET = parallel_euler_tour_tree::EulerTourTree;
+
     class BatchDynamicConnectivity {
     public:
         /** Initializes an empty graph with a fixed number of vertices.
@@ -56,6 +63,8 @@ namespace batchDynamicConnectivity {
          *  @param[in] num_vertices Number of vertices in the graph.
          */
         explicit BatchDynamicConnectivity(int64_t num_vertices);
+
+        explicit BatchDynamicConnectivity(int64_t num_vertices, const sequence <UndirectedEdge> &se);
 
         /** Deallocates the data structure. */
         ~BatchDynamicConnectivity();
@@ -135,46 +144,49 @@ namespace batchDynamicConnectivity {
         sequence <Vertex> BatchFindRepr(const sequence <Vertex> &sv);
 
     private:
-        void AddNonTreeEdge(const UndirectedEdge &edge);
-
-        void BatchAddNonTreeEdge(const UndirectedEdge &edge);
-
-        void AddTreeEdge(const UndirectedEdge &edge);
-
-        void BatchAddTreeEdge(const UndirectedEdge &edge);
-
-        void AddEdgeToAdjacencyList(const UndirectedEdge &edge, detail::Level level);
-
-        void BatchUpdateAdjacencyList(const UndirectedEdge &edge, detail::Level level);
-
-        void DeleteEdgeFromAdjacencyList(
-                const UndirectedEdge &edge, detail::Level level);
-
-        void BatchDeleteEdgesInAdjacencyList(
-                const UndirectedEdge &edge, detail::Level level);
-
-        void ReplaceTreeEdge(const UndirectedEdge &edge, detail::Level level);
 
         const int64_t num_vertices_;
+        const int64_t max_level_;
+
         // `spanning_forests_[i]` stores F_i, the spanning forest for the i-th
         // subgraph. In particular, `spanning_forests[0]` is a spanning forest for the
         // whole graph.
 
         // TODO: Turn this into a sequence
         // TODO: Turn dynamic forest to use parallel Euler tour trees. Convert to ParallelDynamicForest
-        std::vector <BatchDynamicET> spanning_forests_;
+        sequence <BatchDynamicET> parallel_spanning_forests_;
 
         // TODO: fix this so that the non_tree_adjacency_lists_ is now proper.
 
         // `adjacency_lists_by_level_[i][v]` contains the vertices connected to vertex
         // v by level-i non-tree edges.
-        std::vector <std::vector<std::unordered_set < Vertex>>>
+        // TODO: make this concurrent map
+        sequence <sequence <std::unordered_set < Vertex>>>
         non_tree_adjacency_lists_;
 
         // TODO: use a concurrent map here.
         // All edges in the graph.
         std::unordered_map <UndirectedEdge, detail::EdgeInfo, UndirectedEdgeHash>
                 edges_;
+
+        void AddNonTreeEdge(const UndirectedEdge &edge);
+
+        void BatchAddNonTreeEdge(const sequence <UndirectedEdge> &se);
+
+        void AddTreeEdge(const UndirectedEdge &edge);
+
+        void BatchAddTreeEdge(const sequence <UndirectedEdge> &se);
+
+        void AddEdgeToAdjacencyList(const UndirectedEdge &edge, detail::Level level);
+
+        void BatchUpdateAdjacencyList(const sequence <std::pair<UndirectedEdge, detail::Level>> &sel);
+
+        void DeleteEdgeFromAdjacencyList(
+                const UndirectedEdge &edge, detail::Level level);
+
+        void BatchDeleteEdgesInAdjacencyList(const sequence <std::pair<UndirectedEdge, detail::Level>> &sel);
+
+        void ReplaceTreeEdge(const UndirectedEdge &edge, detail::Level level);
     };
 
 }

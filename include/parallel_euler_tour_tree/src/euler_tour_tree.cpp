@@ -70,6 +70,11 @@ bool EulerTourTree::IsConnected(int u, int v) const {
   return vertices_[u].FindRepresentative() == vertices_[v].FindRepresentative();
 }
 
+// BUG: fix this because this is bad. Check whether casting etc is valid and all.
+int EulerTourTree::getRepresentative(int u) const { 
+  return (int) vertices_[u].FindRepresentative();
+}
+
 void EulerTourTree::Link(int u, int v) {
   Element* uv{allocator.alloc()};
   new (uv) Element{randomness_.ith_rand(0)};

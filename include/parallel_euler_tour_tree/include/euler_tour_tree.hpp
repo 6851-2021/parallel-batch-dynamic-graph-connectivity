@@ -20,7 +20,7 @@ class EulerTourTree {
   explicit EulerTourTree(int num_vertices);
   ~EulerTourTree();
   EulerTourTree(const EulerTourTree&) = delete;
-  EulerTourTree(EulerTourTree&&) = delete;
+  // EulerTourTree(EulerTourTree&&) = delete;
   EulerTourTree& operator=(const EulerTourTree&) = delete;
   EulerTourTree& operator=(EulerTourTree&&) = delete;
 
@@ -32,6 +32,8 @@ class EulerTourTree {
   // Removes edge {`u`, `v`} from forest. The edge must be present in the
   // forest.
   void Cut(int u, int v);
+
+  int getRepresentative(int u) const; 
 
   // Adds all edges in the `len`-length array `links` to the forest. Adding
   // these edges must not create cycles in the graph.
