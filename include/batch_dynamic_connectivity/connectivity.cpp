@@ -73,7 +73,7 @@ namespace batchDynamicConnectivity {
         BatchDynamicET* pMaxLevelEulerTree = parallel_spanning_forests_[max_level_ - 1];
         
         parallel_for(int i=0; i < suv.size(); i++){
-            s[i] = pMaxLevelEulerTree->IsConnected(std::get<0>(suv[i]), std::get<1>(suv[i]));
+            s[i] = pMaxLevelEulerTree->IsConnected(suv[i].first, suv[i].second);
         }
         return s;
     }
