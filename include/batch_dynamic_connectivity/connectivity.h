@@ -193,40 +193,6 @@ namespace batchDynamicConnectivity {
         void ReplaceTreeEdge(const UndirectedEdge &edge, detail::Level level);
     };
 
-    parlaysequence<std::unordered_set < Vertex>> generateVertexLayer(int numVertices, int max_level_){
-        auto vtxLayer = parlaysequence<std::unordered_set < Vertex>>(numVertices);
-
-        parallel_for(int i = 0; i < max_level_; i++){
-            auto vtxset = std::unordered_set<Vertex> ();
-            vtxLayer[i] = vtxset;
-        }
-
-        return vtxLayer;
-    }
-
-    BatchDynamicConnectivity::BatchDynamicConnectivity(int numVertices)
-            : num_vertices_(numVertices), max_level_(log2(numVertices)) {
-
-        parallel_spanning_forests_ = parlaysequence<BatchDynamicET*> (max_level_);
-        
-        parallel_for(int i = 0; i < max_level_; ++i){
-            BatchDynamicET* ET = new BatchDynamicET{numVertices};
-            parallel_spanning_forests_[i] = ET;
-        }
-
-
-
-        non_tree_adjacency_lists_ = parlaysequence<parlaysequence<std::unordered_set < Vertex>>>(max_level_);
-
-        parallel_for(int i = 0; i < max_level_; ++i){
-            auto vtxLayer = generateVertexLayer(numVertices, max_level_);
-            non_tree_adjacency_lists_[i] = vtxLayer;
-        } 
-
-        edges_ = std::unordered_map <UndirectedEdge, detail::EdgeInfo, UndirectedEdgeHash>();
-    }
-
-
 }
 
 
