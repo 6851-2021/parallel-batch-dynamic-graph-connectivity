@@ -4,8 +4,8 @@
 
 #include "connectivity.h"
 
-// TODO: add the parallel constructor for edges
-// TODO:
+// RESOLVED: add the parallel constructor for edges
+// TODO: figure out a way to do BatchQuery for representatives.
 
 namespace batchDynamicConnectivity {
 
