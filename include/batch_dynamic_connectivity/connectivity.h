@@ -50,7 +50,7 @@ namespace detail {
 
     
 template<typename T>
-using sequence = parlay::sequence<T>;
+using parlaysequence = parlay::sequence<T>;
 
 namespace batchDynamicConnectivity {
     using UndirectedEdge = dynamicGraph::UndirectedEdge;
@@ -68,7 +68,7 @@ namespace batchDynamicConnectivity {
          */
         explicit BatchDynamicConnectivity(int64_t num_vertices);
 
-        explicit BatchDynamicConnectivity(int64_t num_vertices, const sequence<UndirectedEdge> &se);
+        explicit BatchDynamicConnectivity(int64_t num_vertices, const parlaysequence<UndirectedEdge> &se);
 
         /** Deallocates the data structure. */
         ~BatchDynamicConnectivity();
@@ -102,7 +102,7 @@ namespace batchDynamicConnectivity {
          *  @param[in] v Vertex.
          *  @returns True if \p u and \p v are connected, false if they are not.
          */
-        sequence<char> BatchConnected(sequence <std::pair<Vertex, Vertex>> suv) const;
+        parlaysequence<char> BatchConnected(parlaysequence <std::pair<Vertex, Vertex>> suv) const;
 
         /** Returns true if edge \p edge is in the graph.
          *
@@ -131,7 +131,7 @@ namespace batchDynamicConnectivity {
          *
          *  @param[in] edge Edge to be added.
          */
-        void BatchAddEdges(const sequence <UndirectedEdge> &se);
+        void BatchAddEdges(const parlaysequence <UndirectedEdge> &se);
 
         /** Deletes an edge from the graph.
          *
@@ -142,10 +142,10 @@ namespace batchDynamicConnectivity {
          *
          *  @param[in] edge Edge to be deleted.
          */
-        void BatchDeleteEdges(const sequence <UndirectedEdge> &se);
+        void BatchDeleteEdges(const parlaysequence <UndirectedEdge> &se);
 
 
-        sequence <Vertex> BatchFindRepr(const sequence <Vertex> &sv);
+        parlaysequence <Vertex> BatchFindRepr(const parlaysequence <Vertex> &sv);
 
     private:
 
@@ -158,14 +158,14 @@ namespace batchDynamicConnectivity {
 
         // TODO: Turn this into a sequence
         // TODO: Turn dynamic forest to use parallel Euler tour trees. Convert to ParallelDynamicForest
-        sequence <BatchDynamicET*> parallel_spanning_forests_;
+        parlaysequence <BatchDynamicET*> parallel_spanning_forests_;
 
         // TODO: fix this so that the non_tree_adjacency_lists_ is now proper.
 
         // `adjacency_lists_by_level_[i][v]` contains the vertices connected to vertex
         // v by level-i non-tree edges.
         // TODO: make this concurrent map
-        sequence <sequence <std::unordered_set < Vertex>*>>
+        parlaysequence <parlaysequence <std::unordered_set < Vertex>*>>
         non_tree_adjacency_lists_;
 
         // TODO: use a concurrent map here.
@@ -175,20 +175,20 @@ namespace batchDynamicConnectivity {
 
         void AddNonTreeEdge(const UndirectedEdge &edge);
 
-        void BatchAddNonTreeEdge(const sequence <UndirectedEdge> &se);
+        void BatchAddNonTreeEdge(const parlaysequence <UndirectedEdge> &se);
 
         void AddTreeEdge(const UndirectedEdge &edge);
 
-        void BatchAddTreeEdge(const sequence <UndirectedEdge> &se);
+        void BatchAddTreeEdge(const parlaysequence <UndirectedEdge> &se);
 
         void AddEdgeToAdjacencyList(const UndirectedEdge &edge, detail::Level level);
 
-        void BatchUpdateAdjacencyList(const sequence <std::pair<UndirectedEdge, detail::Level>> &sel);
+        void BatchUpdateAdjacencyList(const parlaysequence <std::pair<UndirectedEdge, detail::Level>> &sel);
 
         void DeleteEdgeFromAdjacencyList(
                 const UndirectedEdge &edge, detail::Level level);
 
-        void BatchDeleteEdgesInAdjacencyList(const sequence <std::pair<UndirectedEdge, detail::Level>> &sel);
+        void BatchDeleteEdgesInAdjacencyList(const parlaysequence <std::pair<UndirectedEdge, detail::Level>> &sel);
 
         void ReplaceTreeEdge(const UndirectedEdge &edge, detail::Level level);
     };
