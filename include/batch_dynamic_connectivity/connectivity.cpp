@@ -33,22 +33,21 @@ namespace batchDynamicConnectivity {
         edges_ = std::unordered_map <UndirectedEdge, detail::EdgeInfo, UndirectedEdgeHash>();
     }
 
-    BatchDynamicConnectivity::BatchDynamicConnectivity(int64_t numVertices, const sequence <UndirectedEdge> &se)
+    BatchDynamicConnectivity::BatchDynamicConnectivity(int64_t numVertices, const parlaysequence <UndirectedEdge> &se)
             : num_vertices_(numVertices), max_level_(log2(numVertices)) {
         
         // parallel initialization for the spanning forests using parallel euler tour trees.
-        parallel_spanning_forests_ = sequence<BatchDynamicET*>(max_level_, 
-            [&numVertices](){
+        parallel_spanning_forests_ = parlaysequence<BatchDynamicET*>::from_function(max_level_, 
+            [&numVertices](size_t i){
                 auto ET = new BatchDynamicET{numVertices};
                 return &ET;
             }
         );
 
-
-        non_tree_adjacency_lists_ = sequence<sequence<std::unordered_set < Vertex>>> (max_level_, 
-            [&numVertices](){ 
-                auto vertex_sequence = new sequence<std::unordered_set < Vertex>> (numVertices, 
-                    [](){
+        non_tree_adjacency_lists_ = parlaysequence<parlaysequence<std::unordered_set < Vertex>>>::from_function(max_level_, 
+            [&numVertices](size_t i){ 
+                auto vertex_sequence = new parlaysequence<std::unordered_set < Vertex>>::from_function(numVertices, 
+                    [&](size_t i){
                         return std::unordered_set< Vertex>();
                     }
                 );
@@ -61,8 +60,8 @@ namespace batchDynamicConnectivity {
         BatchAddEdges(se);
     }
 
-    sequence<char> BatchDynamicConnectivity::BatchConnected(sequence <std::pair<Vertex, Vertex>> suv) const {
-        sequence<char> s(suv.size(), 0);
+    parlaysequence<char> BatchDynamicConnectivity::BatchConnected(parlaysequence <std::pair<Vertex, Vertex>> suv) const {
+        parlaysequence<char> s(suv.size(), 0);
 
         BatchDynamicET* pMaxLevelEulerTree = parallel_spanning_forests_[max_level_ - 1];
         
