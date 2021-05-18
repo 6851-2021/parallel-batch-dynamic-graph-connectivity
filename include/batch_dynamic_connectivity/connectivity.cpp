@@ -6,6 +6,10 @@
 
 // RESOLVED: add the parallel constructor for edges
 // TODO: figure out a way to do BatchQuery for representatives.
+// TODO: something about MST or DSU
+// TODO: figure our a way to loop over subtree (preferably edges)
+// TODO: get a remove duplicates function from parlay. 
+// TODO: 
 
 namespace batchDynamicConnectivity {
 
