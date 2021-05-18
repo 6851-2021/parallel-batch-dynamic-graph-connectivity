@@ -9,14 +9,14 @@
 #include <euler-trees/src/dynamic_trees/parallel_euler_tour_tree/include/euler_tour_tree.hpp>
 #include <utilities/hash.hpp>
 
-// TODO: I need to get cilk+ with gcc.
+// RESOLVED: I need to get cilk+ with gcc.
+// TODO: Move utilities into a proper include path
+// TODO: fix the include structure such that eulertree is in include path.
+// TODO: Add the pbbs sequence library and related things here./
 // TODO: Write the make file for this to compiler.
 // TODO: A runner main file to do some benchmark things
-// TODO: fix the include structure such that eulertree is in include path.
-// TODO: Move utilities into a proper include path
-// TODO: Update the documentation on all the of functions in headers
-// TODO: Add the pbbs sequence library and related things here./
 // TODO: Get the above to compiler properly. 
+// TODO: Update the documentation on all the of functions in headers
 
 
 namespace detail {
