@@ -8,15 +8,15 @@ PARALLEL_EULER_TOUR_TREE_DIR=$(INCLUDE_DIR)/parallel_euler_tour_tree
 SEQUENCE_DIR=$(INCLUDE_DIR)/sequence
 UTIL_DIR=$(INCLUDE_DIR)/utilities
 BENCHMARK_DIR=$(INCLUDE_DIR)/benchmark
-PARLAY_DIR=$(INCLUDE_DIR)/parlaylib
+PARLAY_DIR=$(ROOT_DIR)/external/parlay
 
 INC=$(INCLUDE_DIR) $(BATCH_DYNAMIC_DIR) $(PARALLEL_EULER_TOUR_TREE_DIR) $(SEQUENCE_DIR) $(UTIL_DIR) $(BENCHMARK_DIR) $(PARLAY_DIR)
 INC_PARAMS=$(INC:%=-I%)
 
 CXX=/home/sualehasif/code/opencilk/opencilk-project/build/bin/clang++
-CXXFLAGS=-std=c++14 -Wall -mcx16 $(INC_PARAMS) -I$(SRC_DIR) -MMD -MP
+CXXFLAGS=-std=c++17 -Wall -mcx16 $(INC_PARAMS) -I$(SRC_DIR) -MMD -MP
 LDFLAGS=-fopencilk
-PARALLEL_FLAGS=-fopencilk
+PARALLEL_FLAGS=-fopencilk -DPARLAY_CILK
 
 TARGET=test_connectivity
 ALL=$(TARGET)

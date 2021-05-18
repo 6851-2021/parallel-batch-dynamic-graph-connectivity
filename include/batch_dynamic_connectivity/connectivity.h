@@ -5,12 +5,12 @@
 #include <unordered_set>
 #include <vector>
 
+#include "external/parlay/sequence.h"
+
 #include "graph.h"
 #include "parallel_euler_tour_tree/include/euler_tour_tree.hpp"
 #include "utilities/include/hash.hpp"
-#include "utilities/include/utils.h"
-
-#include <parlay/sequence.h>
+// #include "utilities/include/utils.h"
 
 // RESOLVED: I need to get cilk+ with gcc.
 // RESOLVED: Move utilities into a proper include path
@@ -165,7 +165,7 @@ namespace batchDynamicConnectivity {
         // `adjacency_lists_by_level_[i][v]` contains the vertices connected to vertex
         // v by level-i non-tree edges.
         // TODO: make this concurrent map
-        parlaysequence <parlaysequence <std::unordered_set < Vertex>*>>
+        parlaysequence <parlaysequence <std::unordered_set < Vertex>>>
         non_tree_adjacency_lists_;
 
         // TODO: use a concurrent map here.

@@ -29,6 +29,12 @@
 #include <stdlib.h>
 using namespace std;
 
+#ifdef OPENCILK
+#define CILK 1
+#else
+#define CILK 0
+#endif
+
 #if defined(CILK)
 #include <cilk/cilk.h>
 #include <cilk/cilk_api.h>
