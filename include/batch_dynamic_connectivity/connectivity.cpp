@@ -126,6 +126,7 @@ namespace batchDynamicConnectivity {
         }
     }
 
+//TODO
 void removeDuplicates(sequence<Vertex>){
     throw 10; // implement me
     return;
@@ -140,9 +141,9 @@ void removeDuplicates(sequence<Vertex>){
             auto level = edges_[se[i]];
             auto u = se[i].first;
             auto v = se[i].second;
-            if (non_tree_adjacency_lists_[level]u].contains(v)){
-                non_tree_adjacency_lists_[level]u].remove(v);
-                non_tree_adjacency_lists_[level][v.remove(u);
+            if (non_tree_adjacency_lists_[level][u].contains(v)){
+                non_tree_adjacency_lists_[level][u].remove(v);
+                non_tree_adjacency_lists_[level][v].remove(u);
             } else {
                 treeEdges.push_back(se[i]);
                 if (level < min_tree_edge_level ){
@@ -193,65 +194,82 @@ void removeDuplicates(sequence<Vertex>){
         sequence < vertex > componentsToConsider; 
         sequence < vertex > largeComponents;
         parallel_for(int i = 0; i < components.size(); i++){
-            if(levelEulerTree.){
-
+            if(levelEulerTree.componentSize(components[i]) <= 1 << (level - 1) ){
+                componentsToConsider.push_back(components[i]);
+            } else{
+                largeComponents.push_back(components[i]);
             }
-        } 
-    //Needs fixing
-    sequence <UndirectedEdge> R;
-
-    while (componentsToConsider.size() != 0) {
-        for (vertex v: componentsToConsider) {
-            //Move all the edges of small components down a level
-            for (UndirectedEdge e : tree.edges(v)) {  // edges loops over the edges of the tree
-                if e.level == i{
-                            e.level = i - 1; // this is probably not nescissary as trees do not internally use edges
-                            trees.at(i-1).AddEdge(e);
-                    }
-            }
-            R.merge(componentSearch(i, v));
         }
-        //code below could be refactored into a helper with insert
-        sequence <UndirectedEdge> auxiliaryEdges = R.map([](UndirectedEdge e) {
-            return UndirectedEdge(trees.at(maxLevel).FindRepr(e.first),
-                                  trees.at(maxLevel).FindRepr(e.second))
-        });
-        auto treeEdgeIndices = FindSpanningTree(auxiliaryEdges)
-        auto treeEdges = getElements(treeEdgeIndices, R) // gets the indexed
-        auto nonTreeEdges = getOtherElements(treeEdgeIndices, R) //gets non indexed elements
-        tree.BatchInsert(treeEdges);
-        for (auto e : treeEdges) {
-            G.remove(e); // should store index of edge in adjacency in edge object for efficiency
-        }
-        promotedEdges.merge(treeEdges);
-        componentsToConsider = componentsToConsider.map([EulerTourTree
-        tree](Vertex
-        v){
-            return tree.Rep(v)
-        });
-        componentsToConsider = sort(componentsToConsider);
-        componentsToConsider = removeDuplicatesFromSortedSeq(componentsToConsider);
-        sequence < vertex > largeComponents.merge(componentsToConsider.filter([int i, EulerTourTree
-        tree](auto
-        v){ return tree.subtreeSize(v) } > 1 << (i - 1));)
-        sequence < vertex > componentsToConsider = componentsToConsider.filter(
-        [int i, EulerTourTree
-        tree](auto
-        v){ return tree.subtreeSize(v) } <= 1 << (i - 1));
-    }
-    return largeComponents;
 
-        sequence<vertex> v;
-        return v;
-    }
-
-    sequence <UndirectedEdge> componentSearch(int i, Vertex v) {
         sequence <UndirectedEdge> R;
-        for (auto u : v.subtree()) {
-            for (auto e : graph.getEdges(u, i)) { // gets non tree edge incident to u at level i
-                if (tree.at(i).Repr(e.second) != v) {
-                    R.pushBack(v)
-                    return R
+
+        while (componentsToConsider.size() != 0) {
+            sequence <vertex> edgesToDropLevel;
+            for (vertex v: componentsToConsider) {
+                //Move all the edges of small components down a level
+                for (UndirectedEdge e : tree.edges(v)) {  // edges loops over the edges of the tree
+                    if edges_[e] == level{
+                            edges_[e] = level - 1;
+                            edgesToDropLevel.push_back(e);
+                    }
+                }
+            R.push_back(componentSearch(i, v));
+            }
+            parallel_spanning_forests_[level - 1].BatchLink(edgeBatchToPairArray(edgesToDropLevel), edgesToDropLevel.size());
+
+
+            sequence <UndirectedEdge> auxiliaryEdges = R.map([](UndirectedEdge e) {
+                return UndirectedEdge(maxLevelEulerTree.getRepresentative(e.first),
+                                       maxLevelEulerTree.getRepresentative(e.second))
+            });
+            auto promIndices = getSpanningTreeIndices(sequence <UndirectedEdge> &se);
+            sequence<UndirectedEdge> newPromotedEdges;
+            sequence<UndirectedEdge> notPromotedEdges;
+            parallel_for(int i=0; i < se.size(); i++){
+                if(promIndices.contains(i))
+                    newPromotedEdges.push_back(se[i]);
+                else
+                    notPromotedEdges.push_back(se[i]);
+            }
+        
+            levelEulerTree.BatchLink(edgeBatchToPairArray(newPromotedEdges), newPromotedEdges.size());
+            parallel_for (int i = 0; i < newPromotedEdges.size(); i++) {
+                level = edges_[newPromotedEdges[i]];
+                auto u = newPromotedEdges[i].first;
+                auto v = newPromotedEdges[i].second;
+                non_tree_adjacency_lists_[level][u].remove(v);
+                non_tree_adjacency_lists_[level][v].remove(u);
+                promotedEdges.push_back(newPromotedEdges[i]);
+            }
+
+            componentsToConsider = 
+            componentsToConsider.map(
+                [levelEulerTree](Vertex v){return levelEulerTree.getRepresentative(v)}
+                );
+        
+            removeDuplicates(componentsToConsider);
+
+            sequence <vertex> newComponentsToConsider;
+            parallel_for (int i = 0; i < componentsToConsider.size(); i++){
+                if( levelEulerTree.componentSize(componentsToConsider[i])  <= 1 << (level - 1)){
+                    newComponentsToConsider.push_back(componentsToConsider[i]);
+                } else {
+                    largeComponents.push_back(componentsToConsider[i]);
+                }
+            }
+            componentsToConsider = newComponentsToConsider;
+        }
+        return largeComponents;
+    }
+
+    UndirectedEdge componentSearch(int level, Vertex v) {
+
+        auto levelEulerTree = parallel_spanning_forests_[level];        
+        //TODO
+        for(auto u: levelEulerTree.subtree(v)){
+            for(auto w : non_tree_adjacency_lists_[level][u]){
+                if(levelEulerTree.getRepresentative(u) != levelEulerTree.getRepresentative(v)){
+                    return UndirectedEdge(u, w)
                 }
             }
         }
