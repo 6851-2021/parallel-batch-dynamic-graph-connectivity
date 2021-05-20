@@ -82,9 +82,21 @@ namespace batchDynamicConnectivity {
 
     // TODO: add parallel DSU structure to implement this
     std::unordered_set<UndirectedEdge> getSpanningTreeIndices(sequence <UndirectedEdge> &se){
-    //returns an unordered set of the indices in the sequence of the
-    //edges forming a spanning tree
-        throw 10; // implement me
+        //I am assuming the interface in
+        //https://github.com/ParAlg/gbbs/blob/master/gbbs/union_find.h?fbclid=IwAR0U_Nbe1SpQF7mbmN0CEGLyF-5v362oy1q-9eQLvjQz916jhfTH69bMx9s
+        // could be worth paralelizing this
+        UnionFind unionFind (num_vertices_);
+        std::unordered_set<UndirectedEdge> tree;
+        for(int i=0; i<se.size(); i++){
+            vertex first = se[i].first;
+            vertex second = se[i].second;
+            //TODO is there a race condition here if we paralize this? How can we resolve that
+            if(unionFind.find(first) != unionFind.find(first)){
+                tree.insert(se[i]);
+                unionFind.link(first, second);
+            }
+        }
+        return tree;
     }
     std::pair<int, int>* edgeBatchToPairArray(sequence <UndirectedEdge> &se){
         std::pair<int, int>* array = new std::pair<int, int>[se.size()];
@@ -126,10 +138,17 @@ namespace batchDynamicConnectivity {
         }
     }
 
-//TODO
-void removeDuplicates(sequence<Vertex>){
-    throw 10; // implement me
-    return;
+//TODO implement semisort or any sort
+void removeDuplicates(sequence<Vertex>& seq){
+    semisort(sequence<Vertex> seq);
+    sequence<Vertex> newSeq;
+    newSeq.push_back(seq[0]);
+    parallel_for(int i =1; i < seq.size(); i++){
+        if(seq[i] != seq[i-1]){
+            newSeq.push_back(seq[i]);
+        }
+    }
+    return newSeq;
 }
 
     void BatchDynamicConnectivity::BatchDeleteEdges(const sequence <UndirectedEdge> &se) {
@@ -159,7 +178,7 @@ void removeDuplicates(sequence<Vertex>){
         auto components = treeEdges.map([](UndirectedEdge e) { return e.first });
         //TODO: merge properly
         components.merge(treeEdges.map([](UndirectedEdge e) { return e.second }));
-        removeDuplicates(components);
+        components = removeDuplicates(components);
         sequence <UndirectedEdge> promotedEdges;
         for(int i = minLevel; i <= maxLevel; i++){
             compononents = parallelLevelSearch(components, promotedEdges, i);
@@ -189,7 +208,7 @@ void removeDuplicates(sequence<Vertex>){
         levelEulerTree.BatchLink(promotedEdges);
         levelEulerTree.BatchAddEdges(edgeBatchToPairArray(promotedEdges), promotedEdges.size());
         components = components.map([&levelEulerTree](auto v){levelEulerTree.getRepresentative(v)});
-        removeDuplicates(components);
+        components = removeDuplicates(components);
 
         sequence < vertex > componentsToConsider; 
         sequence < vertex > largeComponents;
@@ -247,7 +266,7 @@ void removeDuplicates(sequence<Vertex>){
                 [levelEulerTree](Vertex v){return levelEulerTree.getRepresentative(v)}
                 );
         
-            removeDuplicates(componentsToConsider);
+            componentsToConsider = removeDuplicates(componentsToConsider);
 
             sequence <vertex> newComponentsToConsider;
             parallel_for (int i = 0; i < componentsToConsider.size(); i++){
