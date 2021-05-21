@@ -157,6 +157,11 @@ namespace batchDynamicConnectivity {
 
         parlaysequence <Vertex> BatchFindRepr(const parlaysequence <Vertex> &sv);
 
+        void printStructure();
+        void printLevel(int8_t level);
+        void printNonTreeEdges();
+        void printNonTreeEdgesForLevel();
+
     private:
 
         const int64_t num_vertices_;
@@ -270,7 +275,7 @@ namespace batchDynamicConnectivity {
 
         edges_ = std::unordered_map <UndirectedEdge, detail::EdgeInfo, UndirectedEdgeHash>();
 
-        // BatchAddEdges(se);
+        BatchAddEdges(se);
     }
 
     parlaysequence<char> BatchDynamicConnectivity::BatchConnected(parlaysequence <std::pair<Vertex, Vertex>> suv) const {
@@ -378,6 +383,42 @@ namespace batchDynamicConnectivity {
         }
     }
 
+
+    // void BatchDynamicConnectivity::printLevel(int8_t level){
+    //     std::cout << "### Printing level: " << level << "in the graph" << std::endl;
+    //     for (auto e: edges_) {
+    //         if (e.second.level == level && e.second.type == detail::EdgeType::kTree){
+    //             std::cout << "<" << e.first.first << ", " << e.first.second << ">" << " : tree" << std::endl;
+    //         }
+    //         if (e.second.level == level && e.second.type == detail::EdgeType::kNonTree){
+    //             std::cout << "<" << e.first << ", " << e.second << ">" << " : not tree \n" << std::endl;
+    //         }
+    //     }
+    //     std::cout << "### end of level" << level << "\n";
+    // }
+    // void BatchDynamicConnectivity::printStructure(){
+    //     for (int i = 0; i < max_level_; i++){
+    //         printLevel(i);
+    //     }
+    // }
+    // void BatchDynamicConnectivity::printNonTreeEdges(){
+    //     std::cout << "#####:  printing non tree edges\n";
+    //     for (auto e: edges_) {
+    //         if (e.second.type == detail::EdgeType::kTree){
+    //             std::cout << "<" << e.first.first << ", " << e.first.second << ">" << std::endl;
+    //         }
+    //     }
+    //     std::cout << "### end of tree edges" << "\n";
+    // }
+    // void BatchDynamicConnectivity::printNonTreeEdgesForLevel(){
+    //     std::cout << "#####:  printing non tree edges\n";
+    //     for (auto e: edges_) {
+    //         if (e.second.type == detail::EdgeType::kNonTree){
+    //             std::cout << "<" << e.first.first << ", " << e.first.second << ">" << std::endl;
+    //         }
+    //     }
+    //     std::cout << "### end of non tree edges" << "\n";
+    // }
 }
 
 
