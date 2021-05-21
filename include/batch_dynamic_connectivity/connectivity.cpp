@@ -13,49 +13,19 @@
 
 namespace batchDynamicConnectivity {
 
-    void BatchDynamicConnectivity::BatchAddEdges(const sequence <UndirectedEdge> &se) {
-        auto maxLevelEulerTree = parallel_spanning_forests_[max_level_ - 1];
-        sequence <UndirectedEdge> auxiliaryEdges = se.map([](UndirectedEdge e) {
-             return UndirectedEdge(maxLevelEulerTree.getRepresentative(e.first),
-                                   maxLevelEulerTree.getRepresentative(e.second))
-        });
-        auto treeIndices = getSpanningTreeIndices(sequence <UndirectedEdge> &se);
-        sequence<UndirectedEdge> treeEdges;
-        sequence<UndirectedEdge> nonTreeEdges;
-        parallel_for(int i=0; i < se.size(); i++){
-            if(treeIndices.contains(i))
-                treeEdges.push_back(se[i]);
-            else
-                nonTreeEdges.push_back(se[i]);
-        }
 
-        //set level
-        parallel_for(int i=0; i < se.size(); i++){
-            edges_[se[i]] = max_level_ - 1;
+    //TODO implement semisort or any sort
+    void removeDuplicates(sequence<Vertex>& seq){
+        semisort(sequence<Vertex> seq);
+        sequence<Vertex> newSeq;
+        newSeq.push_back(seq[0]);
+        parallel_for(int i =1; i < seq.size(); i++){
+            if(seq[i] != seq[i-1]){
+                newSeq.push_back(seq[i]);
+            }
         }
-        
-        // add tree edges
-        maxLevelEulerTree.BatchLink(edgeBatchToPairArray(treeEdges), treeEdges.size());
-
-        // add to adjacancy list
-        parallel_for(int i = 0; i < nonTreeEdges.size(); i++){
-            non_tree_adjacency_lists_[max_level_ - 1][nonTreeEdges[i].first].add(nonTreeEdges[i].second);
-            non_tree_adjacency_lists_[max_level_ - 1][nonTreeEdges[i].second].add(nonTreeEdges[i].first);
-        }
+        return newSeq;
     }
-
-//TODO implement semisort or any sort
-void removeDuplicates(sequence<Vertex>& seq){
-    semisort(sequence<Vertex> seq);
-    sequence<Vertex> newSeq;
-    newSeq.push_back(seq[0]);
-    parallel_for(int i =1; i < seq.size(); i++){
-        if(seq[i] != seq[i-1]){
-            newSeq.push_back(seq[i]);
-        }
-    }
-    return newSeq;
-}
 
     void BatchDynamicConnectivity::BatchDeleteEdges(const sequence <UndirectedEdge> &se) {
         //TODO: split se into tree and non tree edges
@@ -198,16 +168,6 @@ void removeDuplicates(sequence<Vertex>& seq){
                 }
             }
         }
-    }
-
-    int64_t log2(int64_t n) {
-        int64_t lg = 0;
-        int64_t power = 1;
-        while (power < n) {
-            power = power << 1;
-            lg += 1;
-        }
-        return lg;
     }
 }
 
