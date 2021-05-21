@@ -29,6 +29,7 @@
 #include <stdlib.h>
 using namespace std;
 
+// #define CILK 1
 #ifdef CILK
 #include <cilk/cilk.h>
 #include <cilk/cilk_api.h>

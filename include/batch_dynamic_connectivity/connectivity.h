@@ -6,10 +6,15 @@
 #include <vector>
 
 #include "external/parlay/sequence.h"
-
+#include "external/parlay/primitives.h"
+#include <map>
 #include "graph.h"
 #include "parallel_euler_tour_tree/include/euler_tour_tree.hpp"
 #include "utilities/include/hash.hpp"
+
+#include <boost/pending/disjoint_sets.hpp>
+#include <boost/property_map/property_map.hpp>
+
 // #include "utilities/include/utils.h"
 
 // RESOLVED: I need to get cilk+ with gcc.
@@ -41,6 +46,9 @@ namespace detail {
 
 }  // namespace detail
 
+typedef int64_t Vertex;
+
+
 /** This class represents an undirected graph that can undergo efficient edge
  *  insertions, edge deletions, and connectivity queries. Multiple edges between
  *  a pair of vertices are supported.
@@ -57,6 +65,8 @@ namespace batchDynamicConnectivity {
     using UndirectedEdgeHash = dynamicGraph::UndirectedEdgeHash;
     using BatchDynamicET = parallel_euler_tour_tree::EulerTourTree;
 
+    using treeSet = std::unordered_set<UndirectedEdge, UndirectedEdgeHash>;
+
     class BatchDynamicConnectivity {
     public:
         /** Initializes an empty graph with a fixed number of vertices.
@@ -71,7 +81,7 @@ namespace batchDynamicConnectivity {
         explicit BatchDynamicConnectivity(int num_vertices, const parlaysequence<UndirectedEdge> &se);
 
         /** Deallocates the data structure. */
-        ~BatchDynamicConnectivity();
+        ~BatchDynamicConnectivity() = default;
 
         /** The default constructor is invalid because the number of vertices in the
          *  graph must be known. */
@@ -150,6 +160,9 @@ namespace batchDynamicConnectivity {
     private:
 
         const int64_t num_vertices_;
+
+
+        // TODO: convert this to int8_t
         const int64_t max_level_;
 
         // `spanning_forests_[i]` stores F_i, the spanning forest for the i-th
@@ -191,7 +204,179 @@ namespace batchDynamicConnectivity {
         void BatchDeleteEdgesInAdjacencyList(const parlaysequence <std::pair<UndirectedEdge, detail::Level>> &sel);
 
         void ReplaceTreeEdge(const UndirectedEdge &edge, detail::Level level);
+
+
+        treeSet getSpanningTree(const parlaysequence <UndirectedEdge> &se);
+
+        std::pair<int, int>* edgeBatchToPairArray(parlaysequence <UndirectedEdge> &se);
+
+        template<typename Rank, typename Parent>
+        treeSet constructTree(Rank& r, Parent& p, const parlaysequence<UndirectedEdge>& se);
     };
+
+
+    parlaysequence<std::unordered_set < Vertex>> generateVertexLayer(int numVertices, int max_level_){
+        auto vtxLayer = parlaysequence<std::unordered_set < Vertex>>(numVertices);
+
+        parallel_for(int i = 0; i < max_level_; i++){
+            auto vtxset = std::unordered_set<Vertex> ();
+            vtxLayer[i] = vtxset;
+        }
+
+        return vtxLayer;
+    }
+
+    BatchDynamicConnectivity::BatchDynamicConnectivity(int numVertices)
+            : num_vertices_(numVertices), max_level_(log2(numVertices)) {
+
+        parallel_spanning_forests_ = parlaysequence<BatchDynamicET*> (max_level_);
+        
+        parallel_for(int i = 0; i < max_level_; ++i){
+            BatchDynamicET* ET = new BatchDynamicET{numVertices};
+            parallel_spanning_forests_[i] = ET;
+        }
+
+
+
+        non_tree_adjacency_lists_ = parlaysequence<parlaysequence<std::unordered_set < Vertex>>>(max_level_);
+
+        parallel_for(int i = 0; i < max_level_; ++i){
+            auto vtxLayer = generateVertexLayer(numVertices, max_level_);
+            non_tree_adjacency_lists_[i] = vtxLayer;
+        } 
+
+        edges_ = std::unordered_map <UndirectedEdge, detail::EdgeInfo, UndirectedEdgeHash>();
+    }
+
+
+    BatchDynamicConnectivity::BatchDynamicConnectivity(int numVertices, const parlaysequence <UndirectedEdge> &se)
+            : num_vertices_(numVertices), max_level_(log2(numVertices)) {
+        
+        parallel_spanning_forests_ = parlaysequence<BatchDynamicET*> (max_level_);
+        
+        parallel_for(int i = 0; i < max_level_; ++i){
+            BatchDynamicET* ET = new BatchDynamicET{numVertices};
+            parallel_spanning_forests_[i] = ET;
+        }
+
+
+
+        non_tree_adjacency_lists_ = parlaysequence<parlaysequence<std::unordered_set < Vertex>>>(max_level_);
+
+        parallel_for(int i = 0; i < max_level_; ++i){
+            auto vtxLayer = generateVertexLayer(numVertices, max_level_);
+            non_tree_adjacency_lists_[i] = vtxLayer;
+        } 
+
+        edges_ = std::unordered_map <UndirectedEdge, detail::EdgeInfo, UndirectedEdgeHash>();
+
+        // BatchAddEdges(se);
+    }
+
+    parlaysequence<char> BatchDynamicConnectivity::BatchConnected(parlaysequence <std::pair<Vertex, Vertex>> suv) const {
+        parlaysequence<char> s(suv.size(), 0);
+
+        BatchDynamicET* pMaxLevelEulerTree = parallel_spanning_forests_[max_level_ - 1];
+        
+        parallel_for(int i=0; i < suv.size(); i++){
+            s[i] = pMaxLevelEulerTree->IsConnected(suv[i].first, suv[i].second);
+        }
+        return s;
+    }
+
+    parlaysequence <Vertex> BatchDynamicConnectivity::BatchFindRepr(const parlaysequence <Vertex> &sv) {
+        auto pMaxLevelEulerTree = parallel_spanning_forests_[max_level_ - 1];
+
+        return parlay::map(sv, [&](Vertex v){return (int64_t) pMaxLevelEulerTree->getRepresentative(v);});
+    }
+
+    template<typename Rank, typename Parent>
+    treeSet BatchDynamicConnectivity::constructTree(Rank& r, Parent& p, const parlaysequence<UndirectedEdge>& se){
+        boost::disjoint_sets<Rank, Parent> dsu(r, p);
+        treeSet tree;
+        
+        // BUG POSSIBLE: check whether this causes a problem.
+        for (auto v: se) {dsu.make_set(v.first); dsu.make_set(v.second);}
+
+        for(auto v: se){
+            Vertex first = v.first;
+            Vertex second = v.second;
+            //TODO is there a race condition here if we paralize this? How can we resolve that
+            
+            if(dsu.find_set(first) != dsu.find_set(second)){
+                tree.insert(v);
+                dsu.link(first, second);
+            }
+        }
+        return tree;
+
+    } 
+
+    // TODO: add parallel DSU structure to implement this
+    treeSet BatchDynamicConnectivity::getSpanningTree(const parlaysequence <UndirectedEdge> &se){
+        //I am assuming the interface in
+        //https://github.com/ParAlg/gbbs/blob/master/gbbs/union_find.h?fbclid=IwAR0U_Nbe1SpQF7mbmN0CEGLyF-5v362oy1q-9eQLvjQz916jhfTH69bMx9s
+        // could be worth paralelizing this
+
+        typedef std::map<Vertex, size_t> rank_t;
+        typedef std::map<Vertex, Vertex> parent_t;
+
+        rank_t rank_map;
+        parent_t parent_map;
+
+        boost::associative_property_map<rank_t>   rank_pmap(rank_map);
+        boost::associative_property_map<parent_t> parent_pmap(parent_map);
+
+        return constructTree(rank_pmap, parent_pmap, se);
+    }
+        
+    std::pair<int, int>* BatchDynamicConnectivity::edgeBatchToPairArray(parlaysequence <UndirectedEdge> &se){
+        std::pair<int, int>* array = new std::pair<int, int>[se.size()];
+        parallel_for(int i=0; i<se.size(); i++){
+            array[i].first =   se[i].first;
+            array[i].second =   se[i].second;
+        }
+        return array;
+    }
+
+
+    void BatchDynamicConnectivity::BatchAddEdges(const parlaysequence <UndirectedEdge> &se) {
+        auto maxLevelEulerTree = parallel_spanning_forests_[max_level_ - 1];
+
+        parlaysequence <UndirectedEdge> auxiliaryEdges = parlay::map(se, [&](UndirectedEdge e) {
+             return UndirectedEdge((Vertex) maxLevelEulerTree->getRepresentative(e.first),
+                                   (Vertex) maxLevelEulerTree->getRepresentative(e.second));
+        });
+
+
+        auto tree = getSpanningTree(se);
+
+        parlaysequence<UndirectedEdge> treeEdges;
+        parlaysequence<UndirectedEdge> nonTreeEdges;
+
+        // BUG POSSIBLE: we do a bad cast and make sure that max_level_ never overflows.
+        
+        parallel_for(int i=0; i < se.size(); i++){
+            if(tree.count(se[i])){
+                treeEdges.push_back(se[i]);
+                detail::EdgeInfo ei = {(detail::Level) (max_level_ - 1), detail::EdgeType::kTree};
+                edges_[se[i]] = ei;
+            } else {
+                nonTreeEdges.push_back(se[i]);
+                detail::EdgeInfo ei = {(detail::Level) (max_level_ - 1), detail::EdgeType::kNonTree};
+                edges_[se[i]] = ei;
+            }
+        }
+        
+        // add tree edges
+        maxLevelEulerTree->BatchLink(edgeBatchToPairArray(treeEdges), treeEdges.size());
+
+        // add to adjacancy list
+        parallel_for(int i = 0; i < nonTreeEdges.size(); i++){
+            non_tree_adjacency_lists_[max_level_ - 1][nonTreeEdges[i].first].insert(nonTreeEdges[i].second);
+            non_tree_adjacency_lists_[max_level_ - 1][nonTreeEdges[i].second].insert(nonTreeEdges[i].first);
+        }
+    }
 
 }
 

@@ -8,10 +8,94 @@
 #include <random>
 #include <utility>
 #include <iostream>
-#include <gtest/gtest.h>
+// #include <gtest/gtest.h>
+// #include "catch.hpp"
 
 using BatchDynamicConnectivity = batchDynamicConnectivity::BatchDynamicConnectivity;
 
-int main(){
-    std::cout << "this is a start" << std::endl;
+using UndirectedEdge = dynamicGraph::UndirectedEdge;
+using UndirectedEdgeHash = dynamicGraph::UndirectedEdgeHash;
+using BatchDynamicET = parallel_euler_tour_tree::EulerTourTree;
+
+using treeSet = std::unordered_set<UndirectedEdge, UndirectedEdgeHash>;
+
+bool Test1(){
+    parlaysequence<UndirectedEdge> edges;
+     //connected component with first four edges
+    for(int i = 0; i < 5; i++){
+        for(int j = 0; j < i; j++){
+            edges.push_back(UndirectedEdge(i, j));
+        }
+    }
+    edges.push_back(UndirectedEdge(5, 6));
+    edges.push_back(UndirectedEdge(6, 7));
+    
+    BatchDynamicConnectivity x (10, edges);
+    
+    parlaysequence<std::pair<Vertex, Vertex>> queries;
+    parlaysequence<char> expectedOut;
+    
+    for(long i = 0; i < 10; i++){
+        for(long j = 0; j < 10; j++){
+            queries.push_back(std::make_pair(i, j));
+            expectedOut.push_back((i == j) || ((i < 5) && (j < 5)) || ((i < 8) && (j < 8)));//|| ((i < 10) && (j < 10))
+        }
+    }
+    
+    auto result = x.BatchConnected(queries);
+    for(int i=0; i < queries.size(); i++){
+        if (result[i] != expectedOut[i])
+            return false;
+    }
+    return true;
 }
+
+bool Test2(){
+    parlaysequence<UndirectedEdge> edges;
+    edges.push_back(UndirectedEdge(0, 1));
+    edges.push_back(UndirectedEdge(1, 2));
+    edges.push_back(UndirectedEdge(3, 4));
+    
+    BatchDynamicConnectivity x (5, edges);
+    
+    parlaysequence<std::pair<Vertex, Vertex>> queries;
+    parlaysequence<char> expectedOut;
+    
+    queries.push_back(std::make_pair(0,1));
+    // queries.push_back(std::make_pair(1,2));
+    // queries.push_back(std::make_pair(3,4));
+    // queries.push_back(std::make_pair(0,3));
+    // queries.push_back(std::make_pair(0,4));
+
+    expectedOut.push_back(true);
+    // expectedOut.push_back(true);
+    // expectedOut.push_back(true);
+    // expectedOut.push_back(false);
+    // expectedOut.push_back(false);
+
+    auto result = x.BatchConnected(queries);
+    for(int i=0; i < queries.size(); i++){
+        if (result[i] != expectedOut[i])
+            return false;
+    }
+    return true;
+    
+}
+
+int main(int argc, char **argv) {
+    // ::testing::InitGoogleTest(&argc, argv);
+    // return RUN_ALL_TESTS();
+    if (Test1()){
+        std::cout <<"Test 1: passed\n";
+    } else{
+        std::cout << "Test 1: failed\n";
+    }
+
+    if (Test2()){
+        std::cout <<"Test 2: passed\n";
+    } else{
+        std::cout << "Test 2: failed\n";
+    }
+
+}
+        

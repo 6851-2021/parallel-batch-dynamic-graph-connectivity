@@ -17,7 +17,7 @@ struct UndirectedEdge {
    *  @param[in] u One endpoint of the edge.
    *  @param[in] v The other endpoint of the edge.
    */
-  UndirectedEdge(Vertex u, Vertex v);
+  UndirectedEdge(Vertex u, Vertex v): first(u), second(v) {};
   UndirectedEdge() = delete;
 
   /** One endpoint of the edge. */
@@ -28,7 +28,9 @@ struct UndirectedEdge {
 /** Defines how to print UndirectedEdge in an output stream. */
 std::ostream& operator<<(std::ostream& out, const UndirectedEdge& edge);
 /** Equality operator for UndirectedEdge. */
-bool operator==(const UndirectedEdge& e1, const UndirectedEdge& e2);
+bool operator==(const UndirectedEdge& e1, const UndirectedEdge& e2) {
+  return e1.first == e2.first && e1.second == e2.second;
+};
 
 /** For storing undirected edges in hash containers. For instance:
  *  \code
@@ -41,6 +43,8 @@ struct UndirectedEdgeHash {
    *  @param[in] edge Edge to be hashed.
    *  @returns Hash value of the edge.
    */
-  std::size_t operator()(const UndirectedEdge& edge) const;
+  std::size_t operator()(const UndirectedEdge& edge) const { 
+    return std::hash<Vertex>()((int64_t) edge.first) ^ std::hash<Vertex>()((int64_t) edge.second); 
+  };
 };
 }

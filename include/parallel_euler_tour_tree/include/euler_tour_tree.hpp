@@ -33,7 +33,7 @@ class EulerTourTree {
   // forest.
   void Cut(int u, int v);
 
-  int64_t getRepresentative(int u) const; 
+  int getRepresentative(int u) const; 
 
   // Adds all edges in the `len`-length array `links` to the forest. Adding
   // these edges must not create cycles in the graph.
