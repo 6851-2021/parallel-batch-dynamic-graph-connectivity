@@ -108,7 +108,7 @@ namespace batchDynamicConnectivity {
                             edgesToDropLevel.push_back(e);
                     }
                 }
-            R.push_back(componentSearch(i, v));
+                R.push_back(componentSearch(i, v));
             }
             parallel_spanning_forests_[level - 1].BatchLink(edgeBatchToPairArray(edgesToDropLevel), edgesToDropLevel.size());
 

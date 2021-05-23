@@ -210,13 +210,16 @@ namespace batchDynamicConnectivity {
 
         void ReplaceTreeEdge(const UndirectedEdge &edge, detail::Level level);
 
-
+        UndirectedEdge componentSearch(int level, Vertex v);
         treeSet getSpanningTree(const parlaysequence <UndirectedEdge> &se);
 
         std::pair<int, int>* edgeBatchToPairArray(parlaysequence <UndirectedEdge> &se);
 
         template<typename Rank, typename Parent>
         treeSet constructTree(Rank& r, Parent& p, const parlaysequence<UndirectedEdge>& se);
+
+            //TODO implement semisort or any sort
+        auto removeDuplicates(parlaysequence<Vertex>& seq);
     };
 
 
@@ -382,6 +385,32 @@ namespace batchDynamicConnectivity {
             non_tree_adjacency_lists_[max_level_ - 1][nonTreeEdges[i].second].insert(nonTreeEdges[i].first);
         }
     }
+
+        //TODO implement semisort or any sort
+    auto BatchDynamicConnectivity::removeDuplicates(parlaysequence<Vertex>& seq){
+        // TODO: possibly change this to use a not inplace sort
+        // FIXME: Turn this into a integer sort by converting vertices to uints
+        parlay::sort_inplace(seq);
+
+        auto newSeq = parlay::unique(seq);
+        return newSeq;
+    }
+
+    // UndirectedEdge BatchDynamicConnectivity::componentSearch(int level, Vertex v) {
+    //     auto levelEulerTree = parallel_spanning_forests_[level];        
+    //     //TODO
+    //     for(auto u: levelEulerTree.subtree(v)){
+    //         for(auto w : non_tree_adjacency_lists_[level][u]){
+    //             if(levelEulerTree.getRepresentative(u) != levelEulerTree.getRepresentative(v)){
+    //                 return UndirectedEdge(u, w);
+    //             }
+    //         }
+    //     }
+    // }
+
+
+
+
 
 
     // void BatchDynamicConnectivity::printLevel(int8_t level){

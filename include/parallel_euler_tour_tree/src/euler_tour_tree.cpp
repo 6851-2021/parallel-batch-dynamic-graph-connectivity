@@ -77,6 +77,10 @@ int EulerTourTree::getRepresentative(int u) const {
   return el->id_.first;
 }
 
+seq::sequence<int> EulerTourTree::ConnectedComponent(int v) {
+  return vertices_[v].GetVertices();
+}
+
 void EulerTourTree::Link(int u, int v) {
   Element* uv{allocator.alloc()};
   new (uv) Element{make_pair(u, v), randomness_.ith_rand(0)};;
