@@ -101,7 +101,7 @@ bool Test3(){
     parlaysequence<char> expectedOut;
     
     for(long i = 0; i < 10; i++){
-        for(long j = 0; j < i; j++){
+        for(long j = 0; j < 10; j++){
             queries.push_back(std::make_pair(i, j));
             expectedOut.push_back((i == j) || ((i < 5) && (j < 5)) || ((5 <= i) && (5 <= j) && (i < 8) && (j < 8)));//|| ((i < 10) && (j < 10))
         }
@@ -112,6 +112,32 @@ bool Test3(){
         if (result[i] != expectedOut[i])
             return false;
     }
+    return true;
+}
+
+bool Test4(){
+    parlaysequence<UndirectedEdge> edges;
+    edges.push_back(UndirectedEdge(0, 1));
+    edges.push_back(UndirectedEdge(1, 2));
+    edges.push_back(UndirectedEdge(3, 4));
+    edges.push_back(UndirectedEdge(4, 5));
+    
+    BatchDynamicConnectivity x (6, edges);
+    
+    parlaysequence<std::pair<Vertex, Vertex>> queries;
+    parlaysequence<char> expectedOut;
+    
+    queries.push_back(std::make_pair(0,1));
+
+    expectedOut.push_back(true);
+
+    auto result = x.BatchConnected(queries);
+    for(int i=0; i < queries.size(); i++){
+        if (result[i] != expectedOut[i])
+            return false;
+    }
+    
+
     return true;
 }
 

@@ -3,9 +3,9 @@
 #include <utility>
 
 #include <parallel_euler_tour_tree/src/edge_map.hpp>
-#include <parallel_euler_tour_tree/src/euler_tour_sequence.hpp>
+#include <parallel_euler_tour_tree/include/euler_tour_sequence.hpp>
 #include <utilities/include/random.h>
-#include <utilities/include/seq.h>
+#include <utilities/include/seq.h> 
 
 namespace parallel_euler_tour_tree {
 

@@ -5,7 +5,7 @@
 #include <utilities/include/concurrentMap.h>
 #include <utilities/include/hash_pair.hpp>
 #include <utilities/include/list_allocator.h>
-#include <parallel_euler_tour_tree/src/euler_tour_sequence.hpp>
+#include <parallel_euler_tour_tree/include/euler_tour_sequence.hpp>
 
 namespace parallel_euler_tour_tree {
 

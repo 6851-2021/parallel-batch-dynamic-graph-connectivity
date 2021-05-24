@@ -14,24 +14,16 @@
 namespace batchDynamicConnectivity {
 
 
-    //TODO implement semisort or any sort
-    void removeDuplicates(sequence<Vertex>& seq){
-        semisort(sequence<Vertex> seq);
-        sequence<Vertex> newSeq;
-        newSeq.push_back(seq[0]);
-        parallel_for(int i =1; i < seq.size(); i++){
-            if(seq[i] != seq[i-1]){
-                newSeq.push_back(seq[i]);
-            }
-        }
-        return newSeq;
-    }
-
     void BatchDynamicConnectivity::BatchDeleteEdges(const sequence <UndirectedEdge> &se) {
+        //deletes a badge of edges, must all have been inserted before
+
+
         //TODO: split se into tree and non tree edges
         // delete edges from adjacency list
-        sequence<UndirectedEdge> treeEdges;
+        sequence<UndirectedEdge> treeEdges; //a list of the tree edges in the batch
         auto min_tree_edge_level = max_level_;
+
+        //the loop deletes the edges from the adjacency list, and computes the above
         parallel_for(int i=0; i< se.size(); i++){
             auto level = edges_[se[i]];
             auto u = se[i].first;
@@ -46,16 +38,23 @@ namespace batchDynamicConnectivity {
                 }
             }
         }
+        //deletes the edges from each forest level
         for(int level = min_tree_edge_level; level < max_level_; i++){
             auto levelEulerTree = parallel_spanning_forests_[level];
             toDelete = treeEdges.filter([level, &edges_](UndirectedEdge e){return edges_[e] <= level});
             levelEulerTree.BatchCut(edgeBatchToPairArray(toDelete), toDelete.size());    
         }
+        //components should end up as a list of represenytatives of the endpoints of eges with no duplicates
+        //It starts as just the endpoints, then when trying to find replacement in each level
+        //we collapse into representatives in that level
+
         auto components = treeEdges.map([](UndirectedEdge e) { return e.first });
         //TODO: merge properly
         components.merge(treeEdges.map([](UndirectedEdge e) { return e.second }));
         components = removeDuplicates(components);
-        sequence <UndirectedEdge> promotedEdges;
+        
+
+        sequence <UndirectedEdge> promotedEdges; //edges promoted so far.
         for(int i = minLevel; i <= maxLevel; i++){
             compononents = parallelLevelSearch(components, promotedEdges, i);
         }
@@ -158,7 +157,7 @@ namespace batchDynamicConnectivity {
     }
 
     UndirectedEdge componentSearch(int level, Vertex v) {
-
+        //looks for an out edge in a component that connests it with a different component
         auto levelEulerTree = parallel_spanning_forests_[level];        
         //TODO
         for(auto u: levelEulerTree.subtree(v)){
