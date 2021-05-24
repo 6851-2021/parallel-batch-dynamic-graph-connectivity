@@ -142,6 +142,49 @@ bool Test4(){
 }
 
 
+bool Test6(){
+    parlaysequence<UndirectedEdge> edges;
+     //connected component with first four edges
+    for(int i = 0; i < 5; i++){
+        for(int j = 0; j < i; j++){
+            edges.push_back(UndirectedEdge(i, j));
+        }
+    }
+    edges.push_back(UndirectedEdge(5, 6));
+    edges.push_back(UndirectedEdge(6, 7));
+    edges.push_back(UndirectedEdge(7, 8));
+    edges.push_back(UndirectedEdge(8, 9));
+    edges.push_back(UndirectedEdge(9, 10));
+    
+    BatchDynamicConnectivity x (11, edges);
+    
+    parlaysequence<std::pair<Vertex, Vertex>> deletes;
+    deletes.push_back(0, 1);
+    deletes.push_back(1, 2);
+    deletes.push_back(3, 4);
+    deletes.push_back(4, 1);
+    deletes.push_back(7, 8);
+    
+    x.BatchDeleteEdges(deletes);
+
+    parlaysequence<std::pair<Vertex, Vertex>> queries;
+    parlaysequence<char> expectedOut;
+    
+    for(long i = 0; i < 10; i++){
+        for(long j = 0; j < i; j++){
+            queries.push_back(std::make_pair(i, j));
+            expectedOut.push_back((i == j) || ((i < 5) && (j < 5)) || ((5 <= i) && (5 <= j) && (i < 8) && (j < 8)) || ((8 <= i) && (8 <= j) && (i < 11) && (j < 11)) );
+        }
+    }
+    
+    auto result = x.BatchConnected(queries);
+    for(int i=0; i < queries.size(); i++){
+        if (result[i] != expectedOut[i])
+            return false;
+    }
+    return true;
+}
+
 int main(int argc, char **argv) {
     // ::testing::InitGoogleTest(&argc, argv);
     // return RUN_ALL_TESTS();
