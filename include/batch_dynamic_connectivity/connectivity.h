@@ -348,14 +348,6 @@ namespace batchDynamicConnectivity {
     }
 
 
-    void BatchDynamicConnectivity::BatchAddEdges(const parlaysequence <UndirectedEdge> &se) {
-        auto maxLevelEulerTree = parallel_spanning_forests_[max_level_ - 1];
-
-        parlaysequence <UndirectedEdge> auxiliaryEdges = parlay::map(se, [&](UndirectedEdge e) {
-             return UndirectedEdge((Vertex) maxLevelEulerTree->getRepresentative(e.first),
-                                   (Vertex) maxLevelEulerTree->getRepresentative(e.second));
-        });
-
         //BUG: This should be computing the minimum spanning tree on auxiliarEdges
         // A fix would be to store a reverse MAP. from auxiliaryEdges to original ones
         // so that we can turn auxiliary edges back to non auxiliary edges after computing the tree
@@ -377,15 +369,18 @@ namespace batchDynamicConnectivity {
         *
         */
 
+    void BatchDynamicConnectivity::BatchAddEdges(const parlaysequence <UndirectedEdge> &se) {
+        auto maxLevelEulerTree = parallel_spanning_forests_[max_level_ - 1];
 
-        auto tree = getSpanningTree(se);
-                 
-
+        parlaysequence <UndirectedEdge> auxiliaryEdges = parlay::map(se, [&](UndirectedEdge e) {
+             return UndirectedEdge((Vertex) maxLevelEulerTree->getRepresentative(e.first),
+                                   (Vertex) maxLevelEulerTree->getRepresentative(e.second));
+        });
+        auto tree = getSpanningTree(auxiliaryEdges);
         parlaysequence<UndirectedEdge> treeEdges;
         parlaysequence<UndirectedEdge> nonTreeEdges;
 
-        // BUG POSSIBLE: we do a bad cast and make sure that max_level_ never overflows.
-        
+        // update the tree and nonTree edges based on the ST computation
         parallel_for(int i=0; i < se.size(); i++){
             if(tree.count(se[i])){
                 treeEdges.push_back(se[i]);
