@@ -6,7 +6,8 @@
                 "${workspaceFolder}/**",
                 "${workspaceFolder}/include/**",
                 "${workspaceFolder}/include/parlaylib/include/**",
-                "/home/sualehasif/.local/OpenCilk-10.0.1-Linux/**"
+                "/home/sualehasif/.local/OpenCilk-10.0.1-Linux/**",
+                "/usr/include/boost/**"
             ],
             "defines": [],
             "compilerPath": "/home/sualehasif/.local/OpenCilk-10.0.1-Linux/bin/clang++",

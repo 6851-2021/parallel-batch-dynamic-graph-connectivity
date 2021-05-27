@@ -24,6 +24,7 @@ ALL=$(TARGET)
 
 OBJS=$(SRC_DIR)/$(TARGET).o \
 	$(INCLUDE_DIR)/parallel_euler_tour_tree/src/edge_map.o \
+	$(INCLUDE_DIR)/parallel_euler_tour_tree/src/euler_tour_sequence.o \
 	$(INCLUDE_DIR)/parallel_euler_tour_tree/src/euler_tour_tree.o \
 	$(INCLUDE_DIR)/sequence/parallel_skip_list/src/skip_list_base.o \
 

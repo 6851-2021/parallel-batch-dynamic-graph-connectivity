@@ -3,8 +3,9 @@
 #include <utility>
 
 #include <parallel_euler_tour_tree/src/edge_map.hpp>
-#include <parallel_euler_tour_tree/src/euler_tour_sequence.hpp>
+#include <parallel_euler_tour_tree/include/euler_tour_sequence.hpp>
 #include <utilities/include/random.h>
+#include <utilities/include/seq.h> 
 
 namespace parallel_euler_tour_tree {
 
@@ -41,6 +42,9 @@ class EulerTourTree {
   // Removes all edges in the `len`-length array `cuts` from the forest. These
   // edges must be present in the forest and must be distinct.
   void BatchCut(std::pair<int, int>* cuts, int len);
+
+  // Returns all vertices in the connected component that contains vertex `v`.
+  seq::sequence<int> ConnectedComponent(int v);
 
  private:
   void BatchCutRecurse(std::pair<int, int>* cuts, int len,
